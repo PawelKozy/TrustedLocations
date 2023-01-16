@@ -4,6 +4,7 @@ $defaultLocations = @("C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Sta
                       "C:\Program Files (x86)\Microsoft Office",
                       "C:\Program Files\Microsoft Office")
 
+
 foreach ($app in $officeApps) {
     $key = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\Trusted Locations"
     if(Test-Path $key){
@@ -14,7 +15,14 @@ foreach ($app in $officeApps) {
             foreach($locationKey in $locationKeys)
             {
                 $path = (Get-ItemProperty -Path $locationKey.PSPath).Path
-                if(!($defaultLocations -contains $path)){
+                $isdefault = $false
+                foreach ($default in $defaultLocations){
+                    if($path.ToLower() -like "$default*"){
+                        $isdefault = $true
+                        break
+                    }
+                }
+                if(!$isdefault){
                     Write-Host "`n$i. $path" -ForegroundColor Green
                     $i++
                 }
