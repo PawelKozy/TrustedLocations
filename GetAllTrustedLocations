@@ -1,15 +1,19 @@
 $officeApps = @("Word", "Excel", "PowerPoint", "Outlook")
 
 foreach ($app in $officeApps) {
-    $key = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\Trusted Locations\"
-    $trustedLocations = Get-ItemProperty -Path $key
-    Write-Host "Trusted Locations for $app:"
-    if ($trustedLocations) {
-        foreach($location in $trustedLocations)
-        {
-            Write-Host $location.Path
+    $key = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\Trusted Locations"
+    if(Test-Path $key){
+        $trustedLocations = Get-ItemProperty -Path $key
+        Write-Host "Trusted Locations for ${app}:"
+        if ($trustedLocations) {
+            foreach($location in $trustedLocations)
+            {
+                Write-Host $location.Path
+            }
+        } else {
+            Write-Host "No Trusted Locations found for $app"
         }
     } else {
-        Write-Host "No Trusted Locations found for $app"
+        Write-Host "No Trusted Locations key found for $app"
     }
 }
