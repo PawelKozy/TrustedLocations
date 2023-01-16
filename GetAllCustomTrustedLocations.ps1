@@ -4,7 +4,6 @@ $defaultLocations = @("C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Sta
                       "C:\Program Files (x86)\Microsoft Office",
                       "C:\Program Files\Microsoft Office")
 
-
 foreach ($app in $officeApps) {
     $key = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\Trusted Locations"
     if(Test-Path $key){
@@ -12,20 +11,14 @@ foreach ($app in $officeApps) {
         Write-Host "`nTrusted Locations for ${app}:" -ForegroundColor Cyan
         if ($locationKeys) {
             $i = 1
-            foreach($locationKey in $locationKeys)
-            {
-                $path = (Get-ItemProperty -Path $locationKey.PSPath).Path
-                $isdefault = $false
-                foreach ($default in $defaultLocations){
-                    if($path.ToLower() -like "$default*"){
-                        $isdefault = $true
-                        break
-                    }
-                }
-                if(!$isdefault){
-                    Write-Host "`n$i. $path" -ForegroundColor Green
-                    $i++
-                }
+            $TrustedLocations = @()
+            foreach($locationKey in $locationKeys){
+                $TrustedLocations += (Get-ItemProperty -Path $locationKey.PSPath).Path
+            }
+            $CustomLocations = Compare-Object -ReferenceObject $defaultLocations -DifferenceObject $TrustedLocations | Select-Object -ExpandProperty InputObject
+            foreach($location in $CustomLocations){
+                Write-Host "`n$i. $location" -ForegroundColor Green
+          $i++
             }
         } else {
             Write-Host "No Trusted Locations found for $app"
