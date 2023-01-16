@@ -3,12 +3,13 @@ $officeApps = @("Word", "Excel", "PowerPoint", "Outlook")
 foreach ($app in $officeApps) {
     $key = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\Trusted Locations"
     if(Test-Path $key){
-        $trustedLocations = Get-ItemProperty -Path $key
-        Write-Host "Trusted Locations for ${app}:"
-        if ($trustedLocations) {
-            foreach($location in $trustedLocations)
+        $locationKeys = Get-ChildItem -Path $key | Where-Object { $_.PSChildName -match "Location*" }
+        Write-Host "Trusted Locations for $app:"
+        if ($locationKeys) {
+            foreach($locationKey in $locationKeys)
             {
-                Write-Host $location.Path
+                $path = (Get-ItemProperty -Path $locationKey.PSPath).Path
+                Write-Host $path
             }
         } else {
             Write-Host "No Trusted Locations found for $app"
