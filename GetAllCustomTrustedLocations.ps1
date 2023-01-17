@@ -16,7 +16,22 @@ foreach($userProfile in $userProfiles)
                 foreach($locationKey in $locationKeys){
                     $TrustedLocations += (Get-ItemProperty -Path $locationKey.PSPath).Path
                 }
-                $CustomLocations = $TrustedLocations | Where-Object {$defaultLocations -notcontains $_}
+                $CustomLocations = @()
+                foreach($location in $TrustedLocations){
+                    $match = $false
+                    foreach($defaultLocation in $defaultLocations)
+                    {
+                        if ($location -like "$defaultLocation*")
+                        {
+                            $match = $true
+                            break
+                        }
+                    }
+                    if (!$match)
+                    {
+                        $CustomLocations += $location
+                    }
+                }
                 if($CustomLocations.Count -gt 0){
                     foreach($location in $CustomLocations){
                         Write-Host "`nUser: $user `nApplication: $app `nCustom Trusted Location: $location" -ForegroundColor Green
