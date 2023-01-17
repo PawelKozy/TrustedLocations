@@ -1,11 +1,11 @@
 $officeApps = @("Word", "Excel", "PowerPoint", "Outlook")
-
-$defaultLocations = @("C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Office",
+$user = (Get-WmiObject -Class Win32_UserProfile | Where-Object { $_.Special -eq $false }).LocalPath
+$defaultLocations = @("C:\Users\$user\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Office",
                       "C:\Program Files (x86)\Microsoft Office",
                       "C:\Program Files\Microsoft Office")
                       
 foreach ($app in $officeApps) {
-    $key = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\Trusted Locations"
+    $key = "HKLM:\Software\Microsoft\Office\16.0\$app\Security\Trusted Locations"
     if(Test-Path $key){
         $locationKeys = Get-ChildItem -Path $key | Where-Object { $_.PSChildName -match "Location*" }
         Write-Host "`nTrusted Locations for ${app}:" -ForegroundColor Cyan
