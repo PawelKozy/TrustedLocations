@@ -2,30 +2,34 @@ $userProfiles = Get-WmiObject -Class Win32_UserProfile | Where-Object { $_.Speci
 foreach($userProfile in $userProfiles)
 {
     $user = $userProfile.LocalPath
-    $officeApps = @("Word", "Excel", "PowerPoint", "Outlook")
-    foreach ($app in $officeApps) {
-        $key = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\Trusted Locations"
-        if(Test-Path $key){
-            $locationKeys = Get-ChildItem -Path $key | Where-Object { $_.PSChildName -match "Location*" }
-            if ($locationKeys) {
-                $TrustedLocations = @()
-                foreach($locationKey in $locationKeys){
-                    $TrustedLocations += (Get-ItemProperty -Path $locationKey.PSPath).Path
-                }
-                if($TrustedLocations.Count -gt 0){
-                    Write-Host "`nUser: $user `nApplication: $app" -ForegroundColor Cyan
-                    foreach($location in $TrustedLocations){
-                        Write-Host "`nTrusted Location: $location" -ForegroundColor Green
+    $sid = $userProfile.SID
+    $officeApps = @("Word","Excel")
+    foreach ($app in $officeApps)
+    {
+        $key = "HKEY_USERS\$sid\Software\Microsoft\Office\16.0\$app\Security\Trusted Locations"
+        try {
+            if (Test-Path $key) {
+                $locationKeys = (Get-ChildItem -Path registry::$key -Recurse) | Where-Object { $_.Name-match "Location*" }
+                if ($locationKeys) {
+                    $TrustedLocations = @()
+                    foreach($locationKey in $locationKeys){
+                        $locationValue = (Get-ItemProperty -Path $locationKey.PSPath).Path
+                        $TrustedLocations += $locationValue
                     }
-                }else{
-                    Write-Host "No trusted locations found for $app for user $user"
+                    if($TrustedLocations.Count -gt 0){
+                        Write-Host "`nUser: $user `nSID: $sid" -ForegroundColor Cyan
+                        foreach($location in $TrustedLocations){
+                            Write-Host "`nTrusted Location: $location" -ForegroundColor Green
+                        }
+                    }else{
+                        Write-Host "No trusted locations found for user $user with SID $sid"
+                    }
+                } else {
+                    Write-Host "No Trusted Locations found for user $user with SID $sid"
                 }
-            } else
-            {
-                Write-Host "No Trusted Locations found for $app for user $user"
             }
-        } else {
-            Write-Host "No Trusted Locations key found for $app for user $user"
+        } catch {
+            Write-Host "An error occurred while trying to access the key $key. The error message is: $_" -ForegroundColor Red
         }
     }
 }
