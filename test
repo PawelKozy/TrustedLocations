@@ -1,0 +1,29 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="MessageBoxInstaller" Version="1.0.0.0" Manufacturer="YourCompany" UpgradeCode="PUT-GUID-HERE">
+    <Package InstallerVersion="200" Compressed="yes" Comments="Windows Installer Package"/>
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="MessageBoxInstaller"/>
+      </Directory>
+    </Directory>
+
+    <Feature Id="ProductFeature" Title="MessageBoxInstaller" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+    <Binary Id="MessageBoxScript" SourceFile="ShowMessage.vbs"/>
+    <CustomAction Id="ShowMessage" BinaryKey="MessageBoxScript" VBScriptCall="" Execute="immediate" />
+
+    <InstallExecuteSequence>
+      <Custom Action="ShowMessage" Before="InstallFinalize"/>
+    </InstallExecuteSequence>
+  </Product>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Components can be defined here -->
+    </ComponentGroup>
+  </Fragment>
+</Wix>
